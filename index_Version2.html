@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SnapPlus 2025 — Dormir Riche</title>
+  <meta name="description" content="SnapPlus 2025 — page de démo. Notifications (ntfy), compteur et opérateur."/>
+  <style>
+    :root{--bg:#071029;--card:rgba(255,255,255,0.04);--accent:#10b981;--muted:rgba(255,255,255,0.75)}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    body{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#001219,var(--bg));color:#fff;padding:20px}
+    .wrap{width:100%;max-width:980px;background:var(--card);padding:28px;border-radius:14px;box-shadow:0 10px 40px rgba(2,6,23,0.7)}
+    header{display:flex;align-items:center;gap:16px}
+    h1{margin:0;font-size:1.6rem}
+    p.lead{margin:8px 0 18px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:12px}
+    a.btn, button.btn{display:inline-flex;gap:8px;align-items:center;justify-content:center;padding:10px 14px;border-radius:10px;background:linear-gradient(180deg,var(--accent),#059669);color:#042018;border:0;font-weight:700;text-decoration:none;cursor:pointer}
+    .ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);font-weight:600}
+    .small{font-size:0.85rem;color:var(--muted)}
+    .foot{margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .status{font-size:0.9rem;color:var(--muted)}
+    .pill{background:rgba(255,255,255,0.04);padding:6px 10px;border-radius:999px;font-weight:600}
+    .notice{margin-top:12px;color:#ffef9a;background:rgba(255,238,154,0.06);padding:8px;border-radius:8px;font-size:0.95rem}
+    footer{margin-top:18px;color:var(--muted);font-size:0.9rem}
+    .links a{color:#bfead5;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="wrap" role="main">
+    <header>
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" aria-hidden><rect width="24" height="24" rx="6" fill="#0ea5a4"/><path d="M7 12h10M7 8h10M7 16h6" stroke="#042018" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div>
+        <h1>SnapPlus 2025</h1>
+        <div class="small">Ton site en ligne — envoie d'alertes, compteur public et opérateur intégré.</div>
+      </div>
+    </header>
+
+    <p class="lead">Upload these 3 fichiers dans la racine du repo <strong>snapplus2025</strong>. Puis visite <span class="pill">https://devaximods.github.io/snapplus2025</span> (quelques secondes après le déploiement).</p>
+
+    <div class="grid" aria-hidden="false">
+      <div style="padding:14px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <strong>Envoyer une alerte (ntfy)</strong>
+            <div class="small">Appuie pour envoyer une notification via ntfy (topic par défaut).</div>
+          </div>
+          <button id="ntfyBtn" class="btn">Envoyer</button>
+        </div>
+        <div id="ntfyResult" class="small" style="margin-top:10px;color:var(--muted)"></div>
+      </div>
+
+      <div style="padding:14px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <strong>Compteur public</strong>
+            <div class="small">Afficher et incrémenter le compteur global (CountAPI).</div>
+          </div>
+          <a class="btn ghost" href="counter.html">Voir</a>
+        </div>
+      </div>
+
+      <div style="padding:14px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <strong>Opérateur / Contact</strong>
+            <div class="small">Ouvre un mini-chat/contact qui envoie les messages à l'opérateur (ntfy topic).</div>
+          </div>
+          <a class="btn ghost" href="operator.html">Ouvrir</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice">
+      Note rapide : les messages postes sont envoyés via le service public <strong>ntfy.sh</strong> et le compteur via <strong>api.countapi.xyz</strong>. Remplace les topics si tu veux recevoir ailleurs.
+    </div>
+
+    <div class="foot">
+      <div class="status" id="status">Statut : prêt</div>
+      <div class="links"><a href="https://github.com/devaximods/snapplus2025" target="_blank" rel="noopener">Repo</a> · <a href="https://ntfy.sh" target="_blank" rel="noopener">ntfy</a> · <a href="https://countapi.xyz" target="_blank" rel="noopener">CountAPI</a></div>
+    </div>
+
+    <footer>
+      <small>Pour recevoir les notifications sur ton téléphone via ntfy : installe l'app officielle ntfy (Android/iOS), abonne-toi au topic <code>snapplus2025-devaximods</code>.</small>
+    </footer>
+  </div>
+
+  <script>
+    // Topic par défaut - change si tu veux
+    const NTFY_TOPIC = "snapplus2025-devaximods";
+
+    const ntfyBtn = document.getElementById('ntfyBtn');
+    const ntfyResult = document.getElementById('ntfyResult');
+    const statusEl = document.getElementById('status');
+
+    async function sendNtfy(message = "SnapPlus : alerte test", title = "SnapPlus") {
+      try {
+        // ntfy accepte un POST simple sur https://ntfy.sh/<topic>
+        const res = await fetch("https://ntfy.sh/" + encodeURIComponent(NTFY_TOPIC), {
+          method: "POST",
+          body: message,
+          headers: {
+            // Title header est facultatif ; si tu veux utiliser X-headers, remplace en conséquence
+            "Title": title,
+            "Priority": "high"
+          }
+        });
+        if (res.ok || res.status === 200 || res.status === 204) {
+          ntfyResult.textContent = "Alerte envoyée ✓ — vérifie l'app ntfy ou l'onglet serveur.";
+          statusEl.textContent = "Statut : alerte envoyée";
+        } else {
+          ntfyResult.textContent = "Erreur envoi ntfy : " + res.status + " " + res.statusText;
+          statusEl.textContent = "Statut : erreur";
+        }
+      } catch (err) {
+        ntfyResult.textContent = "Erreur fetch ntfy : " + err.message;
+        statusEl.textContent = "Statut : erreur réseau";
+      }
+    }
+
+    ntfyBtn.addEventListener('click', async () => {
+      ntfyBtn.disabled = true;
+      ntfyBtn.textContent = "Envoi...";
+      await sendNtfy("Notification envoyée depuis la page principale de SnapPlus — " + new Date().toLocaleString(), "SnapPlus Alert");
+      ntfyBtn.textContent = "Envoyer";
+      ntfyBtn.disabled = false;
+    });
+  </script>
+</body>
+</html>

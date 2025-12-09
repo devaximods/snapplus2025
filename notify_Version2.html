@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>SnapPlus — Envoi ntfy</title>
+  <meta name="description" content="Envoyer une notification via ntfy au topic snapplus2025-devaximods" />
+  <style>
+    :root{--bg:#041426;--panel:rgba(255,255,255,0.03);--accent:#10b981}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto;min-height:100vh;background:linear-gradient(180deg,var(--bg),#05323a);color:#fff;display:flex;align-items:center;justify-content:center;padding:20px}
+    .wrap{width:100%;max-width:720px;background:var(--panel);padding:22px;border-radius:12px}
+    h1{margin:0 0 6px;font-size:1.6rem}
+    p{margin:0 0 14px;color:rgba(255,255,255,0.8)}
+    label{display:block;margin:10px 0 6px;font-size:13px;color:rgba(255,255,255,0.85)}
+    input[type=text],textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:#fff}
+    textarea{min-height:120px;resize:vertical}
+    .row{display:flex;gap:10px;margin-top:14px}
+    button{background:var(--accent);color:#05202a;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+    .out{margin-top:12px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:14px;color:var(--accent)}
+    a.back{display:inline-block;margin-top:12px;color:rgba(255,255,255,0.9);text-decoration:underline}
+    .hint{font-size:13px;color:rgba(255,255,255,0.6);margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Envoyer une notification (ntfy)</h1>
+    <p>Topic public utilisé : <strong>snapplus2025-devaximods</strong>. Les utilisateurs peuvent s'abonner côté client (appli ntfy sur Android ou autres clients compatibles).</p>
+
+    <label for="title">Titre</label>
+    <input id="title" type="text" placeholder="Titre de la notif" value="SnapPlus — Notification" />
+
+    <label for="message">Message</label>
+    <textarea id="message" placeholder="Ton message ici...">Ceci est une démo SnapPlus 2025 — dors riche 💰</textarea>
+
+    <label for="priority">Priorité</label>
+    <select id="priority">
+      <option value="default">default</option>
+      <option value="low">low</option>
+      <option value="high">high</option>
+    </select>
+
+    <div class="row">
+      <button id="sendBtn">Envoyer via ntfy</button>
+      <button id="curlBtn" style="background:#2b6cb0">Copier commande curl</button>
+    </div>
+
+    <div id="out" class="out" style="display:none"></div>
+
+    <div class="hint">
+      Astuce : pour s'abonner, installe l'appli ntfy (Android) et abonne-toi au topic <code>snapplus2025-devaximods</code>. Ou utilise ton client ntfy favori.
+    </div>
+
+    <a class="back" href="index.html">← Retour</a>
+  </div>
+
+  <script>
+    (function(){
+      const topic = 'snapplus2025-devaximods';
+      const sendBtn = document.getElementById('sendBtn');
+      const curlBtn = document.getElementById('curlBtn');
+      const out = document.getElementById('out');
+
+      function show(msg, ok=true){
+        out.style.display='block';
+        out.style.color = ok ? 'var(--accent)' : '#ff8080';
+        out.textContent = msg;
+      }
+
+      sendBtn.addEventListener('click', async ()=>{
+        const title = document.getElementById('title').value || '';
+        const message = document.getElementById('message').value || '';
+        const priority = document.getElementById('priority').value || 'default';
+        if(!message.trim()){ show('Le message est vide', false); return; }
+        show('Envoi en cours…');
+
+        try{
+          const res = await fetch('https://ntfy.sh/' + encodeURIComponent(topic), {
+            method: 'POST',
+            headers: {
+              'Title': title,
+              'Priority': priority
+            },
+            body: message
+          });
+          if(res.ok){
+            show('Notification envoyée ✅');
+          } else {
+            const text = await res.text().catch(()=>res.statusText);
+            show('Erreur: ' + res.status + ' — ' + text, false);
+          }
+        }catch(e){
+          show('Échec réseau: ' + (e.message || e), false);
+        }
+      });
+
+      curlBtn.addEventListener('click', ()=>{
+        const title = encodeURIComponent(document.getElementById('title').value || '');
+        const message = encodeURIComponent(document.getElementById('message').value || '');
+        const priority = document.getElementById('priority').value || 'default';
+        const curl = `curl -v -X POST -H "Title: ${decodeURIComponent(title)}" -H "Priority: ${priority}" -d "${decodeURIComponent(message)}" https://ntfy.sh/${topic}`;
+        navigator.clipboard && navigator.clipboard.writeText(curl).then(()=>{
+          show('Commande curl copiée dans le presse-papiers ✅');
+        }).catch(()=>{ show('Impossible de copier automatiquement. Voici la commande:\n' + curl); });
+      });
+    })();
+  </script>
+</body>
+</html>

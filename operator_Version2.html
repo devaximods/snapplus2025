@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>SnapPlus — Panneau opérateur</title>
+  <meta name="description" content="Panneau opérateur pour SnapPlus: voir compteur, régler ou réinitialiser via CountAPI." />
+  <style>
+    :root{--bg:#071a2a;--panel:rgba(255,255,255,0.03);--accent:#10b981}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto;min-height:100vh;background:linear-gradient(180deg,var(--bg),#02323a);color:#fff;display:flex;align-items:center;justify-content:center;padding:20px}
+    .wrap{width:100%;max-width:720px;background:var(--panel);padding:22px;border-radius:12px}
+    h1{margin:0 0 6px;font-size:1.6rem}
+    label{display:block;margin:10px 0 6px;font-size:13px;color:rgba(255,255,255,0.85)}
+    input[type=number],input[type=text],button{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:#fff}
+    .row{display:flex;gap:10px;margin-top:14px}
+    .row button{flex:1}
+    button.primary{background:var(--accent);color:#05202a;border:none;font-weight:700;cursor:pointer}
+    .out{margin-top:12px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:14px;color:var(--accent)}
+    .small{font-size:13px;color:rgba(255,255,255,0.6)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Panneau opérateur</h1>
+    <p class="small">Gère le compteur public (CountAPI). Opérations publiques sans authentification — utilise avec précaution.</p>
+
+    <label>Valeur actuelle du compteur</label>
+    <div id="curVal" style="font-size:28px;font-weight:800;color:var(--accent)">—</div>
+
+    <label for="setVal">Définir une valeur (ex: 100)</label>
+    <input id="setVal" type="number" placeholder="Valeur entière (>=0)" />
+
+    <div class="row">
+      <button id="setBtn" class="primary">Définir la valeur</button>
+      <button id="resetBtn" style="background:#ff6b6b;color:#061020;border:none;border-radius:8px;cursor:pointer">Réinitialiser à 0</button>
+    </div>
+
+    <div style="margin-top:12px">
+      <label for="getBtn" class="small">Actualiser</label>
+      <button id="getBtn">Rafraîchir la valeur</button>
+    </div>
+
+    <div id="out" class="out" style="display:none"></div>
+
+    <p class="small" style="margin-top:12px">Namespaces utilisés: <code>devaximods-snapplus2025</code> • clé: <code>visits</code></p>
+
+    <a href="index.html" class="small" style="color:rgba(255,255,255,0.9);text-decoration:underline">← Retour</a>
+  </div>
+
+  <script>
+    (function(){
+      const namespace = 'devaximods-snapplus2025';
+      const key = 'visits';
+      const curValEl = document.getElementById('curVal');
+      const out = document.getElementById('out');
+
+      function show(msg, ok=true){
+        out.style.display='block';
+        out.style.color = ok ? 'var(--accent)' : '#ff8080';
+        out.textContent = msg;
+      }
+
+      async function getVal(){
+        try{
+          const res = await fetch('https://api.countapi.xyz/get/' + encodeURIComponent(namespace) + '/' + encodeURIComponent(key));
+          const j = await res.json();
+          if(typeof j.value === 'number'){ curValEl.textContent = j.value.toLocaleString(); return j.value; }
+          curValEl.textContent = '—';
+        }catch(e){
+          curValEl.textContent='—';
+        }
+      }
+
+      async function setVal(v){
+        try{
+          const res = await fetch('https://api.countapi.xyz/set/' + encodeURIComponent(namespace) + '/' + encodeURIComponent(key) + '?value=' + encodeURIComponent(v), {method:'GET'});
+          const j = await res.json();
+          if(typeof j.value === 'number'){ curValEl.textContent = j.value.toLocaleString(); show('Valeur définie: ' + j.value); }
+          else show('Erreur lors du set', false);
+        }catch(e){ show('Erreur réseau: ' + (e.message||e), false) }
+      }
+
+      document.getElementById('getBtn').addEventListener('click', getVal);
+      document.getElementById('setBtn').addEventListener('click', ()=>{
+        const v = parseInt(document.getElementById('setVal').value,10);
+        if(Number.isNaN(v) || v < 0){ show('Entrer une valeur entière >= 0', false); return; }
+        setVal(v);
+      });
+      document.getElementById('resetBtn').addEventListener('click', ()=> setVal(0));
+
+      // init
+      getVal();
+    })();
+  </script>
+</body>
+</html>
